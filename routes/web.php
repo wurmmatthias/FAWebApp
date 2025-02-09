@@ -22,6 +22,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/items', function () {
+    return view('dashboard.items'); // Ensure this matches your Blade file path
+})->middleware(['auth'])->name('items');
+
 Route::get('/dashboard', function () {
     // Fetch all saved transactions from the database
     $transactions = SaveData::orderBy('created_at', 'desc')->get();

@@ -40,6 +40,7 @@ return [
         'client_secret' => env('BATTLENET_CLIENT_SECRET'),
         'redirect' => env('BATTLENET_REDIRECT_URI'),
         'region' => 'eu', // Change if needed
+        'scopes' => ['openid', 'wow.profile'], // Add 'wow.profile' scope
     ],
 
 ];

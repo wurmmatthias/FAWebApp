@@ -24,7 +24,14 @@ class User extends Authenticatable
         'battlenet_id',
         'avatar',
     ];
-    
+
+        // Accessor to get avatar (Battle.net or default)
+        public function getAvatarUrlAttribute()
+        {
+            return $this->avatar 
+                ? $this->avatar // Use Battle.net avatar if available
+                : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&size=100'; // Default avatar
+        }
 
 
     /**

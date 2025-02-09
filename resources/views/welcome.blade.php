@@ -70,11 +70,25 @@
             transition: background 0.3s;
         }
         .btn-primary {
-            background:rgb(245, 155, 20);
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Ensures everything inside is centered */
+            gap: 10px; /* Adds space between the icon and text */
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.3s, transform 0.2s;
             color: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
+
         .btn-primary:hover {
-            background:rgb(77, 77, 77);
+            transform: scale(1.05);
         }
         .btn-secondary {
             background: white;
@@ -139,7 +153,8 @@
         .btn-red { background-color:rgb(230, 34, 34); color: white; }
         .bn-logo {
             width: 24px !important;
-            height: auto;
+            height: 24px;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -154,7 +169,7 @@
                 @else
                     <a href="{{ url('/auth/battlenet/redirect') }}" class="btn btn-primary" :class="selectedButtonTheme">
                         <img src="https://static-00.iconduck.com/assets.00/battlenet-icon-2047x2048-fymgd2pk.png" class="bn-logo">
-                        Login with Battle.net
+                        <span>Anmelden mit Battle.net</span>
                     </a>
                     <a href="{{ route('login') }}" class="btn btn-primary" :class="selectedButtonTheme">Anmelden</a>
                     @if (Route::has('register'))
