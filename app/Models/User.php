@@ -21,7 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'battlenet_id',
+        'avatar',
     ];
+    
+
 
     /**
      * The attributes that should be hidden for serialization.

@@ -1,0 +1,156 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "My API",
+        "description": "This is a sample API documentation.",
+        "contact": {
+            "email": "support@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/save-gold": {
+            "get": {
+                "tags": [
+                    "SaveData"
+                ],
+                "summary": "Retrieve saved data",
+                "description": "Returns all saved data",
+                "operationId": "getSavedData",
+                "responses": {
+                    "200": {
+                        "description": "Data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SaveData"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Data not found"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "SaveData"
+                ],
+                "summary": "Save data",
+                "description": "Stores data in the database",
+                "operationId": "saveData",
+                "requestBody": {
+                    "description": "Pass data to be saved",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "charName",
+                                    "transactionType"
+                                ],
+                                "properties": {
+                                    "charName": {
+                                        "type": "string",
+                                        "example": "Hero123"
+                                    },
+                                    "transactionType": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "AmountGold": {
+                                        "type": "string",
+                                        "example": "1000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Data saved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data saved successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SaveData": {
+                "title": "SaveData",
+                "description": "SaveData model schema",
+                "required": [
+                    "charName",
+                    "transactionType"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "charName": {
+                        "type": "string",
+                        "example": "Hero123"
+                    },
+                    "transactionType": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "AmountGold": {
+                        "type": "string",
+                        "example": "1000"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "SaveData",
+            "description": "SaveData"
+        }
+    ]
+}

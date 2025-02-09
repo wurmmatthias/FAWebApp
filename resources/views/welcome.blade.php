@@ -6,6 +6,7 @@
     <title>Raufasertapete - Gildenbank</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -73,7 +74,7 @@
             color: white;
         }
         .btn-primary:hover {
-            background:rgb(240, 185, 4);
+            background:rgb(77, 77, 77);
         }
         .btn-secondary {
             background: white;
@@ -112,18 +113,50 @@
         .wallpaper-preview img.selected {
             border: 2px solid yellow;
         }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .btn-blue { background-color: #3498db; color: white; }
+        .btn-green { background-color: #2ecc71; color: white; }
+        .btn-orange { background-color: #e67e22; color: white; }
+        .btn-red { background-color:rgb(230, 34, 34); color: white; }
+        .bn-logo {
+            width: 24px !important;
+            height: auto;
+        }
     </style>
 </head>
-<body>
+<body x-data="themeHandler()" :style="{ backgroundImage: selectedBackground ? `url('${selectedBackground}')` : '' }">
     <div class="container">
         <img src="/storage/logo-test.png" width="80px" height="80px" alt="Logo">
         <h1>Raufasertapete Gildenbank</h1>
         <div class="btn-container">
             @if (Route::has('login'))
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="btn btn-primary">Dashboard</a>
+                    <a href="{{ url('/dashboard') }}" class="btn btn-primary" :class="selectedButtonTheme">Dashboard</a>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-primary">Anmelden</a>
+                    <a href="{{ url('/auth/battlenet/redirect') }}" class="btn btn-primary" :class="selectedButtonTheme">
+                        <img src="https://static-00.iconduck.com/assets.00/battlenet-icon-2047x2048-fymgd2pk.png" class="bn-logo">
+                        Login with Battle.net
+                    </a>
+                    <a href="{{ route('login') }}" class="btn btn-primary" :class="selectedButtonTheme">Anmelden</a>
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="btn btn-secondary">Registrieren</a>
                     @endif
@@ -135,10 +168,10 @@
         <div class="wallpaper-selector">
             <p>Wähle ein Theme:</p>
             <div class="wallpaper-preview">
-                <img src="/storage/landscape.webp" onclick="setWallpaper('/storage/landscape.webp')" alt="Shadowlands">
-                <img src="/storage/landscape2.webp" onclick="setWallpaper('/storage/landscape2.webp')" alt="Undermine">
-                <img src="/storage/landscape3.webp" onclick="setWallpaper('/storage/landscape3.webp')" alt="Orgrimmar">
-                <img src="/storage/landscape4.webp" onclick="setWallpaper('/storage/landscape4.webp')" alt="Stormwind">
+                <img src="/storage/landscape.webp" onclick="setWallpaper('/storage/landscape.webp')" alt="Shadowlands" :class="{ 'image-selected': selectedBackground === 'landscape1.jpg' }" @click="setTheme('landscape1.jpg', 'btn-green')">
+                <img src="/storage/landscape2.webp" onclick="setWallpaper('/storage/landscape2.webp')" alt="Undermine" :class="{ 'image-selected': selectedBackground === 'landscape1.jpg' }" @click="setTheme('landscape1.jpg', 'btn-orange')">
+                <img src="/storage/landscape3.webp" onclick="setWallpaper('/storage/landscape3.webp')" alt="Orgrimmar" :class="{ 'image-selected': selectedBackground === 'landscape1.jpg' }" @click="setTheme('landscape1.jpg', 'btn-red')">
+                <img src="/storage/landscape4.webp" onclick="setWallpaper('/storage/landscape4.webp')" alt="Stormwind" :class="{ 'image-selected': selectedBackground === 'landscape1.jpg' }" @click="setTheme('landscape1.jpg', 'btn-blue')">
             </div>
             <button class="btn btn-secondary" onclick="resetWallpaper()">Standard zurücksetzen</button>
         </div>
@@ -146,6 +179,18 @@
 
     <div class="footer" style="background: rgba(0, 0, 0, 0.7);padding: 5px;">
         &copy; {{ date('Y') }} - Raufasertapete. All rights reserved. Developed by Xyssa & Jaluna.
+    </div>
+
+    <div x-data="{ show: localStorage.getItem('announcementSeen') ? false : true }">
+        <template x-if="show">
+            <div class="modal">
+                <div class="modal-content">
+                    <h2>Hinweis</h2>
+                    <p>Die Registierung und Anmeldung in dieser App dienen ausschließlich Demozwecken. Wir arbeiten an einer Authentifizierung via Battle.Net Konto.</p>
+                    <button @click="show = false; localStorage.setItem('announcementSeen', 'true')">Ja ja passt schon, sei still!</button>
+                </div>
+            </div>
+        </template>
     </div>
 
     <script>
@@ -188,6 +233,22 @@
                 }
             });
         }
+
+        function themeHandler() {
+            return {
+                selectedBackground: localStorage.getItem('selectedBackground') || '',
+                selectedButtonTheme: localStorage.getItem('selectedButtonTheme') || 'btn-blue',
+
+                setTheme(background, buttonTheme) {
+                    this.selectedBackground = background;
+                    this.selectedButtonTheme = buttonTheme;
+
+                    localStorage.setItem('selectedBackground', background);
+                    localStorage.setItem('selectedButtonTheme', buttonTheme);
+                }
+            }
+        }
+
     </script>
 </body>
 </html>
