@@ -23,8 +23,12 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/items', function () {
-    return view('dashboard.items'); // Ensure this matches your Blade file path
+    return view('dashboard.items');
 })->middleware(['auth'])->name('items');
+
+Route::get('/downloads', function () {
+    return view('dashboard.downloads');
+})->middleware(['auth'])->name('downloads');
 
 Route::get('/dashboard', function () {
     // Fetch all saved transactions from the database
@@ -44,21 +48,69 @@ Route::get('/auth/battlenet/redirect', function () {
 });
 
 Route::get('/auth/battlenet/callback', function () {
-    $battlenetUser = Socialite::driver('battlenet')->user();
+    try {
+        $battlenetUser = Socialite::driver('battlenet')->user();
+        $accessToken = $battlenetUser->token;
 
-    $user = User::updateOrCreate(
-        ['battlenet_id' => $battlenetUser->id],
-        [
-            'name' => $battlenetUser->nickname ?? 'Unknown User',
-            'email' => $battlenetUser->email ?? null,
-            'avatar' => $battlenetUser->avatar ?? null,
-            'password' => bcrypt(str()->random(16)), // Generate a random password
-        ]
-    );
+        // 🔹 Step 1: Get Battle.net User Info
+        $userInfoResponse = Http::withHeaders([
+            'Authorization' => "Bearer {$accessToken}"
+        ])->get("https://oauth.battle.net/userinfo");
 
-    Auth::login($user);
+        $userInfo = $userInfoResponse->json();
+        $battleTag = $userInfo['battletag'] ?? 'Unknown';
 
-    return redirect('/dashboard');
+        // Default Avatar (if WoW character not found)
+        $avatarUrl = "https://ui-avatars.com/api/?name=" . urlencode($battleTag) . "&size=100";
+
+        // 🔹 Step 2: Fetch WoW Accounts and Characters
+        $wowProfileResponse = Http::withHeaders([
+            'Authorization' => "Bearer {$accessToken}"
+        ])->get("https://eu.api.blizzard.com/profile/user/wow?namespace=profile-eu&locale=en_GB");
+
+        $wowProfile = $wowProfileResponse->json();
+
+        if (!empty($wowProfile['wow_accounts'][0]['characters'])) {
+            $character = $wowProfile['wow_accounts'][0]['characters'][0]; // Use the first character found
+            $realmSlug = $character['realm']['slug'];
+            $characterName = strtolower($character['name']);
+
+            // 🔹 Step 3: Fetch Character Profile to Get Avatar
+            $characterProfileResponse = Http::withHeaders([
+                'Authorization' => "Bearer {$accessToken}"
+            ])->get("https://eu.api.blizzard.com/profile/wow/character/{$realmSlug}/{$characterName}?namespace=profile-eu&locale=en_GB");
+
+            $characterProfile = $characterProfileResponse->json();
+
+            if (!empty($characterProfile['assets'])) {
+                foreach ($characterProfile['assets'] as $asset) {
+                    if ($asset['key'] === 'avatar') {
+                        $avatarUrl = $asset['value']; // Set avatar to the WoW character image
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 🔹 Step 4: Update or Create User
+        $user = User::updateOrCreate(
+            ['battlenet_id' => $battlenetUser->id],
+            [
+                'name' => $battleTag,
+                'email' => $battlenetUser->email ?? null,
+                'avatar' => $avatarUrl, // Save WoW avatar if found
+                'password' => bcrypt(str()->random(16)), // Random password for security
+            ]
+        );
+
+        Auth::login($user);
+
+        return redirect('/dashboard');
+
+    } catch (\Exception $e) {
+        logger('Battle.net Authentication Error', ['error' => $e->getMessage()]);
+        return redirect('/')->with('error', 'Failed to authenticate with Battle.net.');
+    }
 });
 
 

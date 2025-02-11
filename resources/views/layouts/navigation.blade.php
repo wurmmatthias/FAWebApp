@@ -19,6 +19,10 @@
                     <x-nav-link :href="route('items')" :active="request()->routeIs('items')">
                         {{ __('Gegenstände') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('downloads')" :active="request()->routeIs('downloads')">
+                        {{ __('Downloads') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -31,7 +35,7 @@
                 <!-- Flexbox for Avatar & Username -->
                 <div class="flex items-center gap-3">
                     <!-- Avatar -->
-                    <img class="w-10 h-10 rounded-full" src="{{ auth()->user()->avatar_url }}" alt="User Avatar">
+                    <img class="w-10 h-10 rounded-full" src="{{ auth()->user()->avatar }}" alt="User Avatar">
 
                     <!-- Username -->
                     <span class="text-gray-700 dark:text-gray-300 font-semibold">
@@ -87,6 +91,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('items')" :active="request()->routeIs('items')">
                 {{ __('Gegenstände') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('downloads')" :active="request()->routeIs('downloads')">
+                {{ __('Downloads') }}
             </x-responsive-nav-link>
         </div>
 

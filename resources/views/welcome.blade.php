@@ -156,6 +156,41 @@
             height: 24px;
             object-fit: contain;
         }
+        .bn-spinner {
+            width: 80px;  /* Adjust size if needed */
+            height: 80px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal-load {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: #000;
+        }
+
+        .modal-content-load {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body x-data="themeHandler()" :style="{ backgroundImage: selectedBackground ? `url('${selectedBackground}')` : '' }">
@@ -167,10 +202,29 @@
                 @auth
                     <a href="{{ url('/dashboard') }}" class="btn btn-primary" :class="selectedButtonTheme">Dashboard</a>
                 @else
-                    <a href="{{ url('/auth/battlenet/redirect') }}" class="btn btn-primary" :class="selectedButtonTheme">
-                        <img src="https://static-00.iconduck.com/assets.00/battlenet-icon-2047x2048-fymgd2pk.png" class="bn-logo">
-                        <span>Anmelden mit Battle.net</span>
-                    </a>
+                    <!-- Wrap the login button inside the Alpine component -->
+                    <div x-data="loadingHandler()">
+                        <!-- Loading Modal -->
+                        <template x-if="loading">
+                            <div class="modal-load">
+                                <div class="modal-content-load">
+                                    <h2>Battle.net Anmeldung</h2>
+                                    <p>Bitte warten... Sie werden weitergeleitet.</p>
+                                    <img src="https://static-00.iconduck.com/assets.00/battlenet-icon-2047x2048-fymgd2pk.png" class="bn-spinner" alt="Loading...">
+                                    </div>
+                            </div>
+                        </template>
+
+                        <!-- Battle.net Login Button -->
+                        <a href="#"
+                        class="btn btn-primary"
+                        :class="selectedButtonTheme"
+                        @click="showLoadingModal()">
+                            <img src="https://static-00.iconduck.com/assets.00/battlenet-icon-2047x2048-fymgd2pk.png" class="bn-logo">
+                            <span>Anmelden mit Battle.net</span>
+                        </a>
+                    </div>
+
                     <a href="{{ route('login') }}" class="btn btn-primary" :class="selectedButtonTheme">Anmelden</a>
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="btn btn-secondary">Registrieren</a>
@@ -196,6 +250,7 @@
         &copy; {{ date('Y') }} - Raufasertapete. All rights reserved. Developed by Xyssa & Jaluna.
     </div>
 
+
     <div x-data="{ show: localStorage.getItem('announcementSeen') ? false : true }">
         <template x-if="show">
             <div class="modal">
@@ -207,6 +262,37 @@
             </div>
         </template>
     </div>
+
+    <div x-data="loadingHandler()">
+    <!-- Loading Modal -->
+    <template x-if="loading">
+        <div class="modal-load">
+            <div class="modal-content-load">
+                <h2>Battle.net Anmeldung</h2>
+                <p>Bitte warten... Die Anmeldung läuft!</p>
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </template>
+
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('loadingHandler', () => ({
+            loading: false,
+            showLoadingModal() {
+                this.loading = true; // Show loading modal
+
+                // Redirect after showing the modal
+                setTimeout(() => {
+                    window.location.href = "{{ url('/auth/battlenet/redirect') }}";
+                }, 500);
+            }
+        }));
+    });
+</script>
+
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
