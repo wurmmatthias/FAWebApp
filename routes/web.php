@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\GuildController;
 use App\Models\User;
 use App\Models\SaveData;
 
@@ -29,6 +30,8 @@ Route::get('/items', function () {
 Route::get('/downloads', function () {
     return view('dashboard.downloads');
 })->middleware(['auth'])->name('downloads');
+
+Route::get('/gilde', [GuildController::class, 'show'])->name('gilde');
 
 Route::get('/dashboard', function () {
     // Fetch all saved transactions from the database
