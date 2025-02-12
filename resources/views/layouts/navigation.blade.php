@@ -12,19 +12,39 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Goldübersicht') }}
-                    </x-nav-link>
+    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+        {{ __('Goldübersicht') }}
+    </x-nav-link>
 
-                    <x-nav-link :href="route('items')" :active="request()->routeIs('items')">
-                        {{ __('Gegenstände') }}
-                    </x-nav-link>
+    <x-nav-link :href="route('items')" :active="request()->routeIs('items')">
+        {{ __('Gegenstände') }}
+    </x-nav-link>
 
-                    <x-nav-link :href="route('downloads')" :active="request()->routeIs('downloads')">
-                        {{ __('Downloads') }}
-                    </x-nav-link>
-                </div>
-            </div>
+    <!-- Tools Dropdown (Correctly Aligned) -->
+    <div class="relative inline-flex items-center">
+        <x-dropdown align="left" width="48">
+            <x-slot name="trigger">
+                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out">
+                    {{ __('Tools') }}
+                    <svg class="inline-block h-4 w-4 ml-1 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </x-slot>
+
+            <x-slot name="content">
+                <x-dropdown-link :href="route('downloads')">
+                    {{ __('Downloads') }}
+                </x-dropdown-link>
+                <x-dropdown-link :href="route('gilde')">
+                    {{ __('Gildenübersicht') }}
+                </x-dropdown-link>
+            </x-slot>
+        </x-dropdown>
+    </div>
+</div>
+
+</div>
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -93,7 +113,10 @@
                 {{ __('Gegenstände') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('downloads')" :active="request()->routeIs('downloads')">
-                {{ __('Downloads') }}
+                {{ __('Tools - Downloads') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('gilde')" :active="request()->routeIs('gilde')">
+                {{ __('Tools - Gildenübersicht') }}
             </x-responsive-nav-link>
         </div>
 
