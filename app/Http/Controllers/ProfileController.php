@@ -9,33 +9,52 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+use App\Services\GuildService;
+
+
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
+        $user = $request->user();
+        $characters = $user->getBattleNetCharacters();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'characters' => $characters, // Ensure this is passed
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request, GuildService $guildService)
     {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $request->validate([
+            'main_character' => 'nullable|string',
+        ]);
+
+        if ($request->filled('main_character')) {
+            $character = json_decode($request->main_character, true);
+            $characterName = strtolower($character['name']);
+            $realmSlug = $character['realm']['slug'];
+
+            // Fetch correct character media URL
+            $character['avatar'] = $guildService->getCharacterMedia($realmSlug, $characterName);
+
+            // Store in database
+            $user->main_character = json_encode($character);
+            $user->save();
         }
 
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('status', 'profile-updated');
     }
+
 
     /**
      * Delete the user's account.
