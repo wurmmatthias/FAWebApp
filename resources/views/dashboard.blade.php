@@ -10,7 +10,7 @@
 
             <!-- Gesamtübersicht -->
             <div class="bg-white dark:bg-gray-800 p-6 shadow-sm sm:rounded-lg">
-                @if ($user->main_character)
+                @if (!empty($mainCharacter))
                     @php
                         $mainCharacter = json_decode($user->main_character, true);
                         $classes = [
@@ -25,6 +25,7 @@
                         // Monthly gold payment status (Replace this with real logic)
                         $monthlyGoldReceived = rand(0, 1);
                         $statusIcon = $monthlyGoldReceived ? '✅' : '❌';
+
                     @endphp
 
                     <div class="flex items-center bg-gray-800 text-white p-4 rounded-lg">
@@ -35,7 +36,7 @@
 
                         <!-- Character Info -->
                         <div class="ml-4">
-                            <h3 class="text-lg font-semibold">{{ $mainCharacter['name'] }}</h3>
+                            <h3 class="text-lg font-semibold">{{ $mainCharacter['name'] }} - {{ ucfirst($mainCharacter['realm']['slug'] ?? '') }}</h3>
                             <p class="text-sm">Level: <span class="font-semibold">{{ $mainCharacter['level'] }}</span></p>
                             <p class="text-sm">Klasse: <span class="font-semibold">{{ $className }}</span></p>
                         </div>
@@ -52,23 +53,52 @@
                 @endif
             </div>
 
-                        <!-- Transactions of Main Character -->
-                        <div class="bg-white dark:bg-gray-800 p-6 shadow-sm sm:rounded-lg">
+            <!-- Transactions of Main Character -->
+            <div class="bg-white dark:bg-gray-800 p-6 shadow-sm sm:rounded-lg">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Transaktionen deines Hauptcharakters</h3>
                 <ul class="space-y-2">
-                    @forelse ($transactions->where('charName', $mainCharacter['name'] ?? '') as $transaction)
-                        @php
-                            $transactionType = $transaction->transactionType == 1 ? 'Einzahlung' : 'Abbuchung';
-                            $transactionColor = $transactionType === 'Einzahlung' ? 'text-green-500' : 'text-red-500';
+                @php
+    $searchstring = isset($mainCharacter['name'], $mainCharacter['realm']['slug'])
+        ? $mainCharacter['name'] . " - " . ucfirst($mainCharacter['realm']['slug'])
+        : '';
+            @endphp
+
+                @forelse ($transactions->where('player_name', $searchstring ?? '') as $transaction)
+                @php
+                            // Convert amount to gold, silver, and copper
+                            $gold = floor($transaction->amount / 10000);
+                            $silver = floor(($transaction->amount % 10000) / 100);
+                            $copper = $transaction->amount % 100;
+
+                            $iconClass = $transaction->source === 'manual'
+                ? 'fa-solid fa-file-pen text-red-500' // Manual transactions 📝
+                : ''; // API transactions 💰
+
                         @endphp
 
                         <li class="flex justify-between items-center border-b border-gray-700 pb-2">
-                            <span class="{{ $transactionColor }} font-semibold">{{ $transactionType }}</span>
-                            <span class="text-gray-900 dark:text-gray-100 font-medium">{{ $transaction->charName }}</span>
-                            <span class="flex items-center {{ $transactionColor }} font-bold">
-                                {{ $transactionType === 'Einzahlung' ? '+' : '-' }}
-                                {{ number_format($transaction->AmountGold) }}
-                                <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_01.jpg" alt="Gold" class="w-5 h-5 ml-1">
+                            <span class="{{ $transaction->type === 'Deposit' ? 'text-green-500' : 'text-red-500' }} font-semibold">
+                            <i class="{{ $iconClass }} text-lg mr-2"></i> {{ $transaction->type === 'Deposit' ? 'Einzahlung' : 'Abbuchung' }}
+                            </span>
+                            <span class="text-gray-900 dark:text-gray-100 font-medium">{{ $transaction->player_name }}</span>
+
+                            <span class="flex items-center font-bold {{ $transaction->type === 'Deposit' ? 'text-green-500' : 'text-red-500' }}">
+                                {{ $transaction->type === 'Deposit' ? '+' : '-' }}
+
+                                @if ($gold > 0)
+                                    <span class="ml-1">{{ $gold }}</span>
+                                    <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_01.jpg" alt="Gold" class="w-5 h-5 ml-1">
+                                @endif
+
+                                @if ($silver > 0 || ($gold == 0 && $copper > 0))
+                                    <span class="ml-1">{{ $silver }}</span>
+                                    <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_03.jpg" alt="Silver" class="w-5 h-5 ml-1">
+                                @endif
+
+                                @if ($copper > 0 || ($gold == 0 && $silver == 0))
+                                    <span class="ml-1">{{ $copper }}</span>
+                                    <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_19.jpg" alt="Copper" class="w-5 h-5 ml-1">
+                                @endif
                             </span>
                         </li>
                     @empty
@@ -77,37 +107,54 @@
                 </ul>
             </div>
 
-            <!-- Total Gold Section -->
-            <div class="bg-gray-900 text-yellow-400 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold">Gesamtsaldo:</h3>
-                <div class="flex items-center text-yellow-500 font-bold text-xl">
-                    {{ isset($totalGold) ? number_format($totalGold) : 0 }}
-                    <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_01.jpg" alt="Gold" class="w-6 h-6 ml-2">
-                </div>
-            </div>
+        <!-- Gesamttransaktionshistorie -->
+        <div class="bg-white dark:bg-gray-800 p-6 shadow-sm sm:rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Transaktionshistorie</h3>
+            <ul class="space-y-2">
+                @forelse ($allTransactions as $transaction) <!-- Ensure it's using $allTransactions -->
+                    @php
+                        // Convert amount to gold, silver, and copper
+                        $gold = floor($transaction->amount / 10000);
+                        $silver = floor(($transaction->amount % 10000) / 100);
+                        $copper = $transaction->amount % 100;
 
-            <!-- Gesamttransaktionshistorie -->
-            <div class="bg-white dark:bg-gray-800 p-6 shadow-sm sm:rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Transaktionshistorie</h3>
-                <ul class="space-y-2">
-                    @foreach ($transactions as $transaction)
-                        @php
-                            $transactionType = $transaction->transactionType == 1 ? 'Einzahlung' : 'Abbuchung';
-                            $transactionColor = $transactionType === 'Einzahlung' ? 'text-green-500' : 'text-red-500';
-                        @endphp
+                        $iconClass = $transaction->source === 'manual'
+                ? 'fa-solid fa-file-pen text-red-500' // Manual transactions 📝
+                : ''; // API transactions 💰
+                    @endphp
 
-                        <li class="flex justify-between items-center border-b border-gray-700 pb-2">
-                            <span class="{{ $transactionColor }} font-semibold">{{ $transactionType }}</span>
-                            <span class="text-gray-900 dark:text-gray-100 font-medium">{{ $transaction->charName }}</span>
-                            <span class="flex items-center {{ $transactionColor }} font-bold">
-                                {{ $transactionType === 'Einzahlung' ? '+' : '-' }}
-                                {{ number_format($transaction->AmountGold) }}
+                    <li class="flex justify-between items-center border-b border-gray-700 pb-2">
+                        <span class="{{ $transaction->type === 'Deposit' ? 'text-green-500' : 'text-red-500' }} font-semibold">
+                        <i class="{{ $iconClass }} text-lg mr-2"></i> {{ $transaction->type === 'Deposit' ? 'Einzahlung' : 'Abbuchung' }}
+                        </span>
+                        <span class="text-gray-900 dark:text-gray-100 font-medium">{{ $transaction->player_name }}</span>
+
+                        <span class="flex items-center font-bold {{ $transaction->type === 'Deposit' ? 'text-green-500' : 'text-red-500' }}">
+                            {{ $transaction->type === 'Deposit' ? '+' : '-' }}
+
+                            @if ($gold > 0)
+                                <span class="ml-1">{{ $gold }}</span>
                                 <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_01.jpg" alt="Gold" class="w-5 h-5 ml-1">
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+                            @endif
+
+                            @if ($silver > 0 || ($gold == 0 && $copper > 0))
+                                <span class="ml-1">{{ $silver }}</span>
+                                <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_03.jpg" alt="Silver" class="w-5 h-5 ml-1">
+                            @endif
+
+                            @if ($copper > 0 || ($gold == 0 && $silver == 0))
+                                <span class="ml-1">{{ $copper }}</span>
+                                <img src="https://wow.zamimg.com/images/wow/icons/large/inv_misc_coin_19.jpg" alt="Copper" class="w-5 h-5 ml-1">
+                            @endif
+                        </span>
+                    </li>
+                @empty
+                    <p class="text-gray-500">Keine Transaktionen gefunden.</p>
+                @endforelse
+            </ul>
+        </div>
+
+
 
         </div>
     </div>

@@ -11,7 +11,7 @@ class SaveDataController extends Controller
     /**
      * @OA\Post(
      *     path="/api/save-gold",
-     *     summary="Save data",
+     *     summary="Save data (deprecated - do not use)",
      *     description="Stores data in the database",
      *     operationId="saveData",
      *     tags={"SaveData"},

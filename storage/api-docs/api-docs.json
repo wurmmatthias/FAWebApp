@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "My API",
-        "description": "This is a sample API documentation.",
+        "title": "Die krasse Raufaser API",
+        "description": "Mega Doku für krasse Sachen",
         "contact": {
             "email": "support@example.com"
         },
@@ -49,7 +49,7 @@
                 "tags": [
                     "SaveData"
                 ],
-                "summary": "Save data",
+                "summary": "Save data (deprecated - do not use)",
                 "description": "Stores data in the database",
                 "operationId": "saveData",
                 "requestBody": {
@@ -106,6 +106,171 @@
                     }
                 }
             }
+        },
+        "/api/upload-transactions": {
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Upload transactions JSON file",
+                "description": "Uploads transactions from a JSON file and saves them to the database",
+                "operationId": "uploadTransactions",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "profileKeys": {
+                                        "type": "object"
+                                    },
+                                    "profiles": {
+                                        "properties": {
+                                            "Xyssa - Blutkessel": {
+                                                "properties": {
+                                                    "totalMoney": {
+                                                        "type": "integer",
+                                                        "example": 1656634395
+                                                    },
+                                                    "transactions": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "1": {
+                                                                    "type": "string",
+                                                                    "example": "Player - Item - Amount"
+                                                                },
+                                                                "2": {
+                                                                    "type": "string",
+                                                                    "example": "Player - Item - Amount"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "MoneyTransactions": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "TimeStamp": {
+                                                                    "type": "integer",
+                                                                    "example": 1739705784
+                                                                },
+                                                                "PlayerGUID": {
+                                                                    "type": "string",
+                                                                    "example": "Player-578-0ABE9596"
+                                                                },
+                                                                "Action": {
+                                                                    "type": "string",
+                                                                    "example": "Deposit"
+                                                                },
+                                                                "Value": {
+                                                                    "type": "integer",
+                                                                    "example": 1000
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transactions uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Transactions uploaded successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid JSON data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid JSON format"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get all transactions",
+                "description": "Retrieve a list of all stored transactions",
+                "operationId": "getTransactions",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "player_name": {
+                                                "type": "string",
+                                                "example": "Xyssa - Blutkessel"
+                                            },
+                                            "amount": {
+                                                "type": "integer",
+                                                "example": 1000
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "Deposit"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Player-578-0ABE9596"
+                                            },
+                                            "transaction_timestamp": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2025-02-16 11:36:24"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -151,6 +316,10 @@
         {
             "name": "SaveData",
             "description": "SaveData"
+        },
+        {
+            "name": "Transactions",
+            "description": "Transactions"
         }
     ]
 }

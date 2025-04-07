@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 
 /**
  * @OA\Info(
- *     title="My API",
+ *     title="Die krasse Raufaser API",
  *     version="1.0.0",
- *     description="This is a sample API documentation.",
+ *     description="Mega Doku für krasse Sachen",
  *     @OA\Contact(
  *         email="support@example.com"
  *     )

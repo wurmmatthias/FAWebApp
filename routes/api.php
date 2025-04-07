@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use App\Models\SaveData;
 use App\Http\Controllers\Api\SaveDataController;
+use App\Http\Controllers\TransactionController;
+
 
 Route::middleware('api')->get('/status', function (Request $request) {
     return response()->json(['message' => 'API is up and running!']);
@@ -35,4 +37,6 @@ Route::post('/save-gold', function (Request $request) {
 
 Route::get('/save-gold', [SaveDataController::class, 'index']);
 
+Route::post('/upload-transactions', [TransactionController::class, 'store']);
+Route::get('/transactions', [TransactionController::class, 'index']);
 

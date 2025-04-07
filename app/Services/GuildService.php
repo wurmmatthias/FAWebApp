@@ -130,27 +130,29 @@ class GuildService
         });
     }
 
-    public function getCharacterMedia($realm, $characterName)
+    public function getCharacterMedia($realmSlug, $characterName)
     {
-        $accessToken = $this->getAccessToken();
-        $url = "https://eu.api.blizzard.com/profile/wow/character/{$realm}/{$characterName}/character-media";
+        $accessToken = Auth::user()->battlenet_token; // Ensure user is authenticated via Battle.net
 
-        $response = Http::withToken($accessToken)
-            ->get($url, [
-                'namespace' => 'profile-eu',
-                'locale' => 'de_DE'
-            ]);
+        $url = "https://eu.api.blizzard.com/profile/wow/character/{$realmSlug}/{$characterName}/character-media?namespace=profile-eu&locale=de_DE";
 
-        $data = json_decode($response->body(), true);
+        $response = Http::withToken($accessToken)->get($url);
 
-        // Find the correct asset URL
+        $data = $response->json();
+
+        if (!isset($data['assets'])) {
+            \Log::error("Failed to fetch character media: " . json_encode($data));
+            return asset('images/default-avatar.jpg'); // Fallback image
+        }
+
+        // Extract avatar URL
         foreach ($data['assets'] as $asset) {
             if ($asset['key'] === 'avatar') {
-                return $asset['value']; // Return the actual URL from Blizzard
+                return $asset['value'];
             }
         }
 
-        return null; // Return null if no image found
+        return asset('images/default-avatar.jpg');
     }
 
 }

@@ -5,7 +5,14 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
-use App\Models\SaveData;
+use App\Models\Transaction;
+use App\Http\Controllers\GuildController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\LootCouncilController;
+
+
 
 
 Route::get('/', function () {
@@ -22,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+
 Route::get('/items', function () {
     return view('dashboard.items');
 })->middleware(['auth'])->name('items');
@@ -30,19 +38,126 @@ Route::get('/downloads', function () {
     return view('dashboard.downloads');
 })->middleware(['auth'])->name('downloads');
 
+Route::get('/impressum', function () {
+    return view('dashboard.impressum');
+})->middleware(['auth'])->name('impressum');
+
+Route::get('/datenschutz', function () {
+    return view('dashboard.privacypolicy');
+})->middleware(['auth'])->name('datenschutz');
+
+Route::get('/gilde', [GuildController::class, 'show'])->name('gilde');
+
+Route::get('/lootcouncil', [LootCouncilController::class, 'index'])->name('lootcouncil.index')->middleware(['auth']);
+Route::post('/lootcouncil/upload', [LootCouncilController::class, 'upload'])->name('lootcouncil.upload');
+
+
+
 Route::get('/dashboard', function () {
     $user = Auth::user();
-    // Fetch all saved transactions from the database
-    $transactions = SaveData::orderBy('created_at', 'desc')->get();
+    $mainCharacter = json_decode($user->main_character, true) ?? null;
 
-    // Only sum deposits (where transactionType = 1)
-    $totalGold = SaveData::where('transactionType', 1)->sum('AmountGold') ?? 0;
+    // Create "Character - Realm" format
+    $characterFullName = null;
+    if ($mainCharacter && isset($mainCharacter['name'], $mainCharacter['realm']['slug'])) {
+        $characterFullName = "{$mainCharacter['name']} - {$mainCharacter['realm']['slug']}";
+    }
 
-    // Debugging: Log the correct totalGold
-    logger('Filtered Total Gold:', ['totalGold' => $totalGold]);
+    // Fetch transactions using full character name
+    $transactions = Transaction::when($characterFullName, function ($query, $characterFullName) {
+        return $query->where('player_name', $characterFullName);
+    })->orderBy('transaction_timestamp', 'desc')->get();
 
-    return view('dashboard', ['transactions' => $transactions, 'totalGold' => $totalGold], compact('user'));
+    // Fetch all transactions for history
+    $allTransactions = Transaction::orderBy('transaction_timestamp', 'desc')->get();
+
+    return view('dashboard', [
+        'user' => $user,
+        'mainCharacter' => $mainCharacter,
+        'characterFullName' => $characterFullName,
+        'transactions' => $transactions,
+        'allTransactions' => $allTransactions,
+    ]);
 })->middleware(['auth'])->name('dashboard');
+
+
+Route::get('/dashboard', function () {
+    $user = Auth::user();
+
+    $mainCharacter = json_decode($user->main_character, true) ?? null;
+
+    // Create "Character - Realm" name
+    $characterFullName = null;
+    if ($mainCharacter && isset($mainCharacter['name'], $mainCharacter['realm']['name'])) {
+        $characterFullName = "{$mainCharacter['name']} - {$mainCharacter['realm']['name']}";
+    }
+
+    // Fetch transactions for the main character OR an empty collection if no character is set
+    $transactions = Transaction::when($characterFullName, function ($query, $characterFullName) {
+        return $query->where('player_name', $characterFullName);
+    })->orderBy('transaction_timestamp', 'desc')->get();
+
+    // Fetch all transactions for history
+    $allTransactions = Transaction::orderBy('transaction_timestamp', 'desc')->get();
+
+    return view('dashboard', [
+        'user' => $user,
+        'mainCharacter' => $mainCharacter,
+        'characterFullName' => $characterFullName,
+        'transactions' => $transactions,
+        'allTransactions' => $allTransactions,
+    ]);
+})->middleware(['auth'])->name('dashboard');
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        // Inline check for admin privileges
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
+
+    Route::get('/admin/users', function () {
+        // Inline check for admin privileges
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
+        $users = User::orderBy('name')->get();
+
+        return view('admin.users', compact('users'));
+    })->name('admin.users');
+
+    Route::get('/admin/settings', function () {
+        // Inline check for admin privileges
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
+        return view('admin.settings');
+    })->name('admin.settings');
+
+    Route::get('/admin/transactions', function () {
+        // Inline check for admin privileges
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Access denied');
+        }
+
+        return view('admin.transactions');
+    })->name('admin.transactions');
+
+    // ✅ Correctly name the promote and revoke routes
+    Route::post('/admin/users/{user}/promote', [UserController::class, 'promote'])->name('admin.users.promote');
+    Route::post('/admin/users/{user}/revoke', [UserController::class, 'revoke'])->name('admin.users.revoke');
+    Route::post('/admin/transactions/store', [TransactionController::class, 'storeManually'])->name('admin.transactions.store');
+
+});
+
+
+
 
 Route::get('/auth/battlenet/redirect', function () {
     return Socialite::driver('battlenet')->setScopes([

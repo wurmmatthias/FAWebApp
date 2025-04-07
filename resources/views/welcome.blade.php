@@ -251,7 +251,7 @@
     </div>
 
 
-    <div x-data="{ show: localStorage.getItem('announcementSeen') ? false : true }">
+    <!--<div x-data="{ show: localStorage.getItem('announcementSeen') ? false : true }">
         <template x-if="show">
             <div class="modal">
                 <div class="modal-content">
@@ -261,7 +261,7 @@
                 </div>
             </div>
         </template>
-    </div>
+    </div>-->
 
     <div x-data="loadingHandler()">
     <!-- Loading Modal -->

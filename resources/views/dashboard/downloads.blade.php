@@ -18,22 +18,22 @@
 
                 @php
                 $addons = [
-        [
-            'name' => 'Raufasertapete Finanzamt',
-            'description' => 'Liest, speichert und visualisiert Daten aus der Gildenbank in den Saved Variables des WoW Clients.',
-            'version' => '1.0.0',
-            'updated' => 'Feb 2025',
-            'url' => '/downloads/elvui.zip',
-            'image' => 'adler.webp'
-        ],
-        [
-            'name' => 'Finanzamt Companion App (Windows / MacOs / Linux)',
-            'description' => 'Sendet Daten aus dem Finanzamt Add-On an die Web-API von Raufasertepte.',
-            'version' => '1.0.0',
-            'updated' => 'Feb 2025',
-            'url' => '/downloads/dbm.zip',
-            'image' => 'facomp.jpg'
-        ],
+                [
+                    'name' => 'Raufasertapete Finanzamt',
+                    'description' => 'Liest, speichert und visualisiert Daten aus der Gildenbank in den Saved Variables des WoW Clients.',
+                    'version' => '1.0.0',
+                    'updated' => 'Feb 2025',
+                    'url' => '/downloads/elvui.zip',
+                    'image' => 'adler.webp'
+                ],
+                [
+                    'name' => 'Finanzamt Companion App (Windows / MacOs / Linux)',
+                    'description' => 'Sendet Daten aus dem Finanzamt Add-On an die Web-API von Raufasertepte.',
+                    'version' => '1.0.0',
+                    'updated' => 'Feb 2025',
+                    'url' => '/downloads/dbm.zip',
+                    'image' => 'facomp.jpg'
+                ],
     ];
                 @endphp
 
